@@ -5,17 +5,17 @@ namespace App\Livewire;
 use App\Models\Card;
 use App\Models\Item;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
 class Todolist extends Component
 {
 
-    #[Rule('required')]
+
     public $title = '';
 
-//    #[Rule('required|min:2')]
-
+    #[Rule('required|min:2')]
     public $titleCard = '';
     public $cardState = false;
     public $todoState = false;
@@ -28,14 +28,59 @@ class Todolist extends Component
 
     }
 
+    public function hydrate()
+    {
+        // Ваш код при гидратации данных компонента
+    }
+
     public function render()
     {
         $this->cards = Card::all();
 
-
         return view('livewire.todolist', [
             'cards' => $this->cards
         ]);
+    }
+
+//    #[On('todo-updated')]
+    public function updateTimestamp($id, $card_id)
+    {
+        $todo = Item::where('id', $id)
+            ->where('card_id', $card_id)
+            ->first();
+        if ($todo) {
+            $todo->updated_at = now();
+            $todo->save();
+//            $this->cards = Card::all();
+        } else {
+            return 'todo not found!';
+        }
+
+
+    }
+
+    public function saveTodo($id)
+    {
+        try {
+            $this->validate([
+                'title' => 'required|min:2',
+            ]);
+
+            Item::create([
+                'todo' => $this->title,
+                'position' => 1,
+                'card_id' => $id
+            ]);
+
+            $this->title = '';
+
+            session()->flash('message','todo added successfully!');
+
+            $this->dispatch('todo-updated');
+
+        } catch (ValidationException $e) {
+            $this->addError('title', $e->validator->errors()->first('title'));
+        }
     }
 
     public function changeCardState($id)
@@ -60,6 +105,7 @@ class Todolist extends Component
 
         $this->cards = Card::all();
         $this->titleCard = '';
+        session()->flash('message','card added successfully!');
     }
 
     public function deleteCard($card_id)
@@ -108,7 +154,7 @@ class Todolist extends Component
 
     }
 
-    public function saveTodo($id)
+    public function saveTodoOld($id)
     {
         $this->validate();
         Item::create([
@@ -120,22 +166,5 @@ class Todolist extends Component
     }
 
 
-    public function saveTodoo($id)
-    {
-        try {
-            $this->validate([
-                'title' => 'required|min:2',
-            ]);
 
-            Item::create([
-                'todo' => $this->title,
-                'position' => 1,
-                'card_id' => $id
-            ]);
-
-            $this->title = '';
-        } catch (ValidationException $e) {
-            $this->addError('title', $e->validator->errors()->first('title'));
-        }
-    }
 }

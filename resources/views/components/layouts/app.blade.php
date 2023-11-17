@@ -7,7 +7,7 @@
         <title>{{ $title ?? 'Page Title' }}</title>
     </head>
     <body class="mx-20">
-    <div class="flex bg-gray-300  rounded shadow">
+    <div class="flex bg-pink-300 font-bold p-4 rounded shadow">
         <a href="/"> Hello Liveware!</a>
         <a class="ml-6" href="/counter">Counter</a>
         <a class="ml-6" href="/calculator">Calculator</a>
